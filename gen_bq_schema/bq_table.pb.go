@@ -18,7 +18,7 @@
 // 	protoc        v3.14.0
 // source: bq_table.proto
 
-package protos
+package gen_bq_schema
 
 import (
 	proto "github.com/golang/protobuf/proto"

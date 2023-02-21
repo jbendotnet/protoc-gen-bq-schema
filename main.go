@@ -20,7 +20,7 @@
 //
 
 // Protobuf code for extensions are generated --
-//go:generate protoc --go_out=. --go_opt=module=github.com/GoogleCloudPlatform/protoc-gen-bq-schema bq_table.proto bq_field.proto
+//go:generate protoc --go_out=. --go_opt=module=github.com/jbendotnet/protoc-gen-bq-schema bq_table.proto bq_field.proto
 
 package main
 
@@ -34,7 +34,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
+	"github.com/jbendotnet/protoc-gen-bq-schema/gen_bq_schema"
 
 	"github.com/golang/glog"
 
@@ -224,7 +224,7 @@ var (
 func convertField(
 	curPkg *ProtoPackage,
 	desc *descriptor.FieldDescriptorProto,
-	msgOpts *protos.BigQueryMessageOptions,
+	msgOpts *gen_bq_schema.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
 	comments Comments,
 	path string) (*Field, error) {
@@ -252,8 +252,8 @@ func convertField(
 	}
 
 	opts := desc.GetOptions()
-	if opts != nil && proto.HasExtension(opts, protos.E_Bigquery) {
-		opt := proto.GetExtension(opts, protos.E_Bigquery).(*protos.BigQueryFieldOptions)
+	if opts != nil && proto.HasExtension(opts, gen_bq_schema.E_Bigquery) {
+		opt := proto.GetExtension(opts, gen_bq_schema.E_Bigquery).(*gen_bq_schema.BigQueryFieldOptions)
 		if opt.Ignore {
 			// skip the field below
 			return nil, nil
@@ -366,7 +366,7 @@ func convertFieldsForType(curPkg *ProtoPackage,
 func convertMessageType(
 	curPkg *ProtoPackage,
 	msg *descriptor.DescriptorProto,
-	opts *protos.BigQueryMessageOptions,
+	opts *gen_bq_schema.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
 	comments Comments,
 	path string) (schema []*Field, err error) {
@@ -462,17 +462,17 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 // If an error is encountered, it is returned instead. If no error occurs, but
 // the message has no gen_bq_schema.bigquery_opts option, this function returns
 // nil, nil.
-func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQueryMessageOptions, error) {
+func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*gen_bq_schema.BigQueryMessageOptions, error) {
 	options := msg.GetOptions()
 	if options == nil {
 		return nil, nil
 	}
 
-	if !proto.HasExtension(options, protos.E_BigqueryOpts) {
+	if !proto.HasExtension(options, gen_bq_schema.E_BigqueryOpts) {
 		return nil, nil
 	}
 
-	return proto.GetExtension(options, protos.E_BigqueryOpts).(*protos.BigQueryMessageOptions), nil
+	return proto.GetExtension(options, gen_bq_schema.E_BigqueryOpts).(*gen_bq_schema.BigQueryMessageOptions), nil
 }
 
 // handleSingleMessageOpt handles --bq-schema_opt=single-message in protoc params.
@@ -488,7 +488,7 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	message := file.GetMessageType()[0]
 	message.Options = &descriptor.MessageOptions{}
 	fileName := file.GetName()
-	proto.SetExtension(message.GetOptions(), protos.E_BigqueryOpts, &protos.BigQueryMessageOptions{
+	proto.SetExtension(message.GetOptions(), gen_bq_schema.E_BigqueryOpts, &gen_bq_schema.BigQueryMessageOptions{
 		TableName: fileName[strings.LastIndexByte(fileName, '/')+1 : strings.LastIndexByte(fileName, '.')],
 	})
 }
